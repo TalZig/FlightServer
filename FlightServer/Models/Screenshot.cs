@@ -25,7 +25,7 @@ namespace FlightServer.Models
 
         }
 
-        public async Task <Stream> GetScreenshot()
+        public async Task<Stream> GetScreenshot()
         {
             HttpResponseMessage resultTest = null;
             // Open connection with the givven externalUrlServer.
@@ -35,7 +35,7 @@ namespace FlightServer.Models
                 httpClient.Timeout = timeout;
                 try
                 {
-                    
+
                     // Get the Json as string.
                     resultTest = await httpClient.GetAsync(requestScreenshot);
                     var image = await resultTest.Content.ReadAsStreamAsync();
@@ -48,13 +48,8 @@ namespace FlightServer.Models
                 {
                     return default;
                 }
-                
-            }
 
-            //Image img = null;
-            //string str = Server.SocketSendReceive(ipHttp, portHttp);
-            int a;
-            int b;
+            }
             return default;
         }
     }

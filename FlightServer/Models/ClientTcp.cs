@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Web;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
@@ -80,7 +76,7 @@ namespace FlightServer.Models
 
                 stm.Write(ba, 0, ba.Length);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine("The sever is stoped");
                 Thread.Sleep(2000);

@@ -30,7 +30,7 @@ namespace FlightServer
             services.AddSingleton<ITCPClient, ClientTcp>();
             services.AddSingleton<FlightGear, FlightGear>();
             services.AddSingleton<Screenshot, Screenshot>();
-           
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

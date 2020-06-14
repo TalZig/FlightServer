@@ -12,7 +12,7 @@ namespace FlightServer.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class CommandController : ControllerBase
-    {            
+    {
         private FlightGear flightGear;
         private static Command commandManager = new Command();
 
@@ -27,7 +27,7 @@ namespace FlightServer.Controllers
             return new string[] { "value1", "value2" };
         }
 
-      
+
 
         // POST: api/Command
         [HttpPost]

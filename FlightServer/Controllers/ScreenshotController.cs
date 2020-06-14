@@ -21,17 +21,17 @@ namespace FlightServer.Controllers
         }
         // GET: Screenshot
         [HttpGet]
-        public async Task <Stream> Get()
+        public async Task<Stream> Get()
         {
             try
             {
                 var str = await screenshot.GetScreenshot();
-                return str;             
+                return str;
             }
             catch (Exception)
-            {          
+            {
             }
-           
+
             return default;
         }
     }

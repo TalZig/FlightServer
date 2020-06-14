@@ -12,15 +12,15 @@ namespace FlightServer.Models
 {
     public class Server
     {
-     
+
         public Server()
         {
-           
+
         }
 
         public void Start()
         {
-           
+
 
         }
         /* IPEndPoint localEndPoint = new IPEndPoint(IPAddress.Any, 8000);
@@ -97,14 +97,12 @@ namespace FlightServer.Models
          {
              string host;
              int port = 80;
-
              if (args.Length == 0)
                  // If no server name is passed as argument to this program,
                  // use the current host name as the default.
                  host = Dns.GetHostName();
              else
                  host = args[0];
-
              host = "www.google.com";
              string result = SocketSendReceive(host, port);
              Console.WriteLine(result);

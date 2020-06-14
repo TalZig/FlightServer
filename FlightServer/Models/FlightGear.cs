@@ -15,9 +15,9 @@ namespace FlightServer.Models
         int portTcp;
 
         public FlightGear(ITCPClient server)
-        {        
+        {
             tcp = server;
-            portTcp = 5402;     
+            portTcp = 5402;
             ipTcp = "127.0.0.1";
             setReqeusts = new Queue<string>();
             tcp.Connect(ipTcp, portTcp);
@@ -26,7 +26,7 @@ namespace FlightServer.Models
             //new thread of Update etc.
         }
 
-    
+
 
         public void Start()
         {
@@ -49,15 +49,15 @@ namespace FlightServer.Models
         }
 
         public bool UpdateTcpSetValues(Command command)
-        {             
+        {
             string temp;
             while (setReqeusts.Count > 0)
             {
                 temp = setReqeusts.Dequeue();
                 tcp.Write(temp);
                 string strRead = tcp.Read();
-                if(!IsValidInput(strRead, temp)) { return false; }
-                
+                if (!IsValidInput(strRead, temp)) { return false; }
+
             }
             return true;
             //while there is no values in queue then send set request to flightGear
@@ -74,7 +74,7 @@ namespace FlightServer.Models
             if (strCompare != strRead)
             {
                 return false;
-            }         
+            }
             return true;
         }
 
