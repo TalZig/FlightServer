@@ -28,6 +28,7 @@ namespace FlightServer.Models
             {
                 tcpclnt.Connect(ip, port);
                 this.stm = this.tcpclnt.GetStream();
+                Write("data\n");
                 connect = true;
             }
             catch (Exception e)
@@ -46,23 +47,24 @@ namespace FlightServer.Models
 
         public string Read()
         {
-            if (tcpclnt != null)
+            if (tcpclnt == null)
             {
-                // Time out of 10 seconds.
-                tcpclnt.ReceiveTimeout = 10000;
-                this.stm.ReadTimeout = 10000;
-                // Only if the ReceiveBufferSize not empty so we want to convert the message to string and return it.
-                if (tcpclnt.ReceiveBufferSize > 0)
+                return "ERR";
+            }
+            // Time out of 10 seconds.
+            tcpclnt.ReceiveTimeout = 10000;
+            this.stm.ReadTimeout = 10000;
+            // Only if the ReceiveBufferSize not empty so we want to convert the message to string and return it.
+            if (tcpclnt.ReceiveBufferSize > 0)
+            {
+                byte[] bb = new byte[tcpclnt.ReceiveBufferSize];
+                int k = this.stm.Read(bb, 0, 100);
+                string massage = "";
+                for (int i = 0; i < k; i++)
                 {
-                    byte[] bb = new byte[tcpclnt.ReceiveBufferSize];
-                    int k = this.stm.Read(bb, 0, 100);
-                    string massage = "";
-                    for (int i = 0; i < k; i++)
-                    {
-                        massage += (Convert.ToChar(bb[i]));
-                    }
-                    return massage;
+                    massage += (Convert.ToChar(bb[i]));
                 }
+                return massage;
             }
             return "ERR";
         }
@@ -73,7 +75,6 @@ namespace FlightServer.Models
                 this.stm = this.tcpclnt.GetStream();
                 ASCIIEncoding asen = new ASCIIEncoding();
                 byte[] ba = asen.GetBytes(command);
-
                 stm.Write(ba, 0, ba.Length);
             }
             catch (Exception)

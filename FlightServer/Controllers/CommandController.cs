@@ -13,10 +13,15 @@ namespace FlightServer.Controllers
     [ApiController]
     public class CommandController : ControllerBase
     {
-        private FlightGear flightGear;
+        private FlightGearClient flightGear;
         private static Command commandManager = new Command();
 
-        public CommandController(FlightGear flightGear1)
+        public const string ThrottleLocation = "/controls/engines/current-engine/throttle";
+        public const string ElevatorLocation = "/controls/flight/elevator";
+        public const string AileronLocation = "/controls/flight/aileron";
+        public const string RudderLocation = "/controls/flight/rudder";
+
+        public CommandController(FlightGearClient flightGear1)
         {
             flightGear = flightGear1;
         }
@@ -31,9 +36,35 @@ namespace FlightServer.Controllers
 
         // POST: api/Command
         [HttpPost]
-        public void Post([FromBody]Command value)
+        public ActionResult<string> Post([FromBody]Command value)
         {
-            commandManager.SetValuesFromPost(value);
+            string resultOfSendingToServer;
+            resultOfSendingToServer = flightGear.UpdateTcpSetValues(AileronLocation, value.Aileron);
+            if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
+            {
+                return NotFound(resultOfSendingToServer);
+            }
+            commandManager.Aileron = value.Aileron;
+            resultOfSendingToServer = flightGear.UpdateTcpSetValues(ThrottleLocation, value.Throttle);
+            if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
+            {
+                return NotFound(resultOfSendingToServer);
+            }
+            commandManager.Throttle = value.Throttle;
+            resultOfSendingToServer = flightGear.UpdateTcpSetValues(ElevatorLocation, value.Elevator);
+            if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
+            {
+                return NotFound(resultOfSendingToServer);
+            }
+            commandManager.Elevator = value.Elevator;
+            resultOfSendingToServer = flightGear.UpdateTcpSetValues(RudderLocation, value.Rudder);
+            if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
+            {
+                return NotFound(resultOfSendingToServer);
+            }
+            commandManager.Rudder = value.Rudder;
+            return Ok();
+            /*commandManager.SetValuesFromPost(value);
             // Call the methood that will update the values and update the flightGear.
             flightGear.setValues(value);
             if (!flightGear.checkSuccessInPost(value))
@@ -41,7 +72,7 @@ namespace FlightServer.Controllers
                 //return "Dont success".
             }
 
-            flightGear.UpdateTcpSetValues(value);
+            flightGear.UpdateTcpSetValues(value);*/
 
         }
     }

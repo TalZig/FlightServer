@@ -28,7 +28,7 @@ namespace FlightServer
         {
             services.AddControllers();
             services.AddSingleton<ITCPClient, ClientTcp>();
-            services.AddSingleton<FlightGear, FlightGear>();
+            services.AddSingleton<FlightGearClient, FlightGearClient>();
             services.AddSingleton<Screenshot, Screenshot>();
 
         }
