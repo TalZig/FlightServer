@@ -31,7 +31,7 @@ namespace FlightServer.Models
         {
             readSucceed = false;
             tcpClient = server;
-            portTcp = 5402;
+            portTcp = 5403;
             ipTcp = "127.0.0.1";
             setReqeusts = new Queue<string>();
             //new thread of Update etc.
@@ -109,7 +109,7 @@ namespace FlightServer.Models
         }
 
 
-        public void Start()
+       /* public void Start()
         {
             try
             {
@@ -119,11 +119,14 @@ namespace FlightServer.Models
             {
                 Console.WriteLine("Problem in connect to tcp");
             }
-        }
+        }*/
+
+
 
         public string UpdateTcpSetValues(string locationOfVariable, double valueOfVariable)
         {
-            Start();
+            /*Start();*/
+            if (!tcpClient.IsConnect()) { return "Need to connect the server"; }
             string messageToServerWithSet = RequestFromServer(true, locationOfVariable, valueOfVariable);
             string statusOfWriteToServer = WriteToServer(messageToServerWithSet);
             if (statusOfWriteToServer != EverythingIsGood) { return statusOfWriteToServer; }

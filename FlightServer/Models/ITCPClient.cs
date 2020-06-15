@@ -7,9 +7,10 @@ namespace FlightServer.Models
 {
     public interface ITCPClient
     {
-        void Connect(string ip, int port);
+        string Connect(string ip, int port);
         void Write(string command);
         string Read(); // blocking call
-        void Disconnect();
+        string Disconnect();
+        bool IsConnect();
     }
 }

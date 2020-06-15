@@ -10,15 +10,12 @@ namespace FlightServer.Models
 {
     public class Screenshot
     {
-        string ipHttp;
-        int portHttp;
         readonly string requestScreenshot = "http://localhost:8080/screenshot?window=WindowA";
-        Server server;
-        ITCPClient socketServer;
+        ITCPClient clientTcp;
         public Screenshot(ITCPClient server)
         {
-            socketServer = server;
-            socketServer.Connect("127.0.0.1", 5402);
+            clientTcp = server;
+            /*socketServer.Connect("127.0.0.1", 5402);*/
             /*server = new Server();
             ipHttp = ip;
             portHttp = port;*/
@@ -50,7 +47,10 @@ namespace FlightServer.Models
                 }
 
             }
-            return default;
+        }
+        public string ConnectToTcp()
+        {
+            return clientTcp.Connect("127.0.0.1", 5403);
         }
     }
 }

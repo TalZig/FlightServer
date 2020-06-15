@@ -14,7 +14,7 @@ namespace FlightServer.Controllers
     [ApiController]
     public class ScreenshotController : ControllerBase
     {
-        public Screenshot screenshot;
+        private static Screenshot screenshot;
         public ScreenshotController(Screenshot ss)
         {
             screenshot = ss;
@@ -23,10 +23,16 @@ namespace FlightServer.Controllers
         [HttpGet]
         public async Task<Stream> Get()
         {
+            string statusOfConnection = screenshot.ConnectToTcp();
+            if (statusOfConnection != "Ok")
+            {
+                return default;
+            }
+            // Connection succeed.
             try
             {
-                var str = await screenshot.GetScreenshot();
-                return str;
+                var image = await screenshot.GetScreenshot();
+                return image;
             }
             catch (Exception)
             {

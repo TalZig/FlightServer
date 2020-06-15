@@ -21,9 +21,9 @@ namespace FlightServer.Models
             connect = false;
         }
 
-        public void Connect(string ip, int port)
+        public string Connect(string ip, int port)
         {
-            if (IsConnect()) { return; }
+            if (IsConnect()) { return "Ok"; }
             try
             {
                 tcpclnt.Connect(ip, port);
@@ -35,14 +35,35 @@ namespace FlightServer.Models
             {
                 connect = false;
                 Console.WriteLine(e);
-                throw new Exception("There is aproblem with connecting to the server");
+                return "There is a problem with connecting to the server";
+                /*throw new Exception("There is aproblem with connecting to the server");*/
             }
+            return "Ok";
         }
-        public void Disconnect()
+        public string Disconnect()
         {
-            tcpclnt.GetStream().Close();
-            tcpclnt.Close();
+            if (!IsConnect()) { return "Ok"; }
+            try
+            {
+                // Close networkStream.
+                tcpclnt.GetStream().Close();
+            }// The networkStream was already closed or something else happen.
+            catch (Exception) 
+            {
+                return "There is a problen of closing NetworkStream";
+            }
+            try
+            {
+                // Close tcpClient.
+                tcpclnt.Close();
+            }// The tcpclnt was already closed or something else happen.
+            catch (Exception) 
+            {
+                return "There is a problen of closing TcpClient";
+            }
+            connect = false;
             tcpclnt = null;
+            return "Ok";
         }
 
         public string Read()
@@ -83,7 +104,7 @@ namespace FlightServer.Models
                 Thread.Sleep(2000);
             }
         }
-        private bool IsConnect()
+        public bool IsConnect()
         {
             return connect;
         }
