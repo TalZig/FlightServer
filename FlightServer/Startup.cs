@@ -52,8 +52,6 @@ namespace FlightServer
             {
                 endpoints.MapControllers();
             });
-            //Server server = new Server();
-            //server.Start();
         }
     }
 }

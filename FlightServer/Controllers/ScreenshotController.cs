@@ -48,7 +48,7 @@ namespace FlightServer.Controllers
             }
             if (image == null)
             {
-                return NotFound(image);
+                return NotFound("Problem in screenshot");
             }
             return File(image, "image/jpg");
         }

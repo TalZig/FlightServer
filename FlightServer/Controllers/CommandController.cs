@@ -23,7 +23,6 @@ namespace FlightServer.Controllers
         [HttpPost]
         public async Task<ActionResult<string>> Post([FromBody]Command value)
         {
-            
             Result myResult = await flightGear.Execute(value);
             if (myResult == Result.Ok)
             {
