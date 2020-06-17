@@ -23,12 +23,12 @@ namespace FlightServer.Controllers
         [HttpPost]
         public async Task<ActionResult<string>> Post([FromBody]Command value)
         {
-            Result myResult = await flightGear.Execute(value);
-            if (myResult == Result.Ok)
+            string myResult = await flightGear.Execute(value);
+            if (myResult == MySimulatorModel.EverythingIsGood)
             {
                 return Ok(MySimulatorModel.EverythingIsGood);
             }
-            return NotFound(AppropriateError(myResult));
+            return NotFound(myResult/*AppropriateError(myResult)*/);
         }
 
         private string AppropriateError(Result result)

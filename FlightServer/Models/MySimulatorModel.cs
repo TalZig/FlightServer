@@ -52,7 +52,7 @@ namespace FlightServer.Models
 
         // Called by the WebApi Controller, it will await on the returned Task<>
         // This is not an async method, since it does not await anything.
-        public Task<Result> Execute(Command cmd)
+        public Task<string> Execute(Command cmd)
         {
             var asyncCommand = new AsyncCommand(cmd);
             _queueCommand.Add(asyncCommand);
@@ -161,23 +161,23 @@ namespace FlightServer.Models
 
         private void OneIterationOfProcessCommands(AsyncCommand command)
         {
-            Result aileronAction = OneActionOfWriteAndRead(AileronLocation, 
+            string aileronAction = OneActionOfWriteAndRead(AileronLocation,
                 command.Command.Aileron);
             if (!CheckReturnOfAction(aileronAction, command)) { return; }
-            Result elevatorAction = OneActionOfWriteAndRead(ElevatorLocation, 
+            string elevatorAction = OneActionOfWriteAndRead(ElevatorLocation,
                 command.Command.Elevator);
             if (!CheckReturnOfAction(elevatorAction, command)) { return; }
-            Result rudderAction = OneActionOfWriteAndRead(RudderLocation, 
+            string rudderAction = OneActionOfWriteAndRead(RudderLocation,
                 command.Command.Rudder);
             if (!CheckReturnOfAction(rudderAction, command)) { return; }
-            Result throttleAction = OneActionOfWriteAndRead(ThrottleLocation, 
+            string throttleAction = OneActionOfWriteAndRead(ThrottleLocation,
                 command.Command.Throttle);
             if (!CheckReturnOfAction(throttleAction, command)) { return; }
-            command.Completion.SetResult(Result.Ok);
+            command.Completion.SetResult(EverythingIsGood);
         }
-        private bool CheckReturnOfAction(Result oneAction, AsyncCommand command)
+        private bool CheckReturnOfAction(string oneAction, AsyncCommand command)
         {
-            if (oneAction != Result.Ok) 
+            if (oneAction != EverythingIsGood/*Result.Ok*/) 
             {
                 command.Completion.SetResult(oneAction);
                 return false; 
@@ -185,59 +185,25 @@ namespace FlightServer.Models
             return true;
         }
 
-        private Result SetResultAccordingToException(string exceptionToChange)
-        {
-            if (exceptionToChange == WriteObjectDisposedException)
-            {
-                return Result.WriteObjectDisposedException;
-            }
-            if (exceptionToChange == WriteInvalidOperationException)
-            {
-                return Result.WriteInvalidOperationException;
-            }
-            if (exceptionToChange == ReadObjectDisposedException)
-            {
-                return Result.ReadObjectDisposedException;
-            }
-            if (exceptionToChange == ReadInvalidOperationException)
-            {
-                return Result.ReadInvalidOperationException;
-            }
-            if (exceptionToChange == ReadTimeoutException)
-            {
-                return Result.ReadTimeoutException;
-            }
-            if (exceptionToChange == ReadIOException)
-            {
-                return Result.ReadIOException;
-            }
-            if (exceptionToChange == RegularException)
-            {
-                return Result.RegularException;
-            }
-            return Result.Ok;
-
-        }
-
-        private Result OneActionOfWriteAndRead(string locationOfVariable, 
+        private string OneActionOfWriteAndRead(string locationOfVariable, 
             double valueOfVariable)
         {
             string messageToServerWithSet = RequestFromServer(true, locationOfVariable, 
                 valueOfVariable);
             string statusOfWriteToServer = WriteToServer(messageToServerWithSet);
             if (statusOfWriteToServer != EverythingIsGood) 
-            { 
-                return SetResultAccordingToException(statusOfWriteToServer); 
+            {
+                return statusOfWriteToServer; /*SetResultAccordingToException(statusOfWriteToServer); */
             }
             string messageToServerInGet = RequestFromServer(false, locationOfVariable, 
                 valueOfVariable);
             client.Write(messageToServerInGet);
             string statusOfReadFromServer = ReadFromServer();
             if (!IsValidInput(statusOfReadFromServer, valueOfVariable)) 
-            { 
-                return SetResultAccordingToException(statusOfReadFromServer); 
+            {
+                return statusOfReadFromServer; /*SetResultAccordingToException(statusOfReadFromServer);*/ 
             }
-            return Result.Ok;
+            return EverythingIsGood;/*Result.Ok;*/
         }
         private bool IsValidInput(string strRead, double valueFromJSON)
         {

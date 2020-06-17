@@ -27,6 +27,7 @@ namespace FlightServer.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            if (!tcpClient.IsConnect()) { return BadRequest("Server is not connected"); }
             byte[] image;
             // Open connection with the givven externalUrlServer.
             using (HttpClient httpClient = new HttpClient())
