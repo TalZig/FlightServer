@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace FlightServer.Models
 {
-    public enum Result { Ok, NotOk }
+    public enum Result { Ok, WriteObjectDisposedException, 
+        WriteInvalidOperationException, WriteIOException, 
+        ReadObjectDisposedException, ReadInvalidOperationException,
+        ReadTimeoutException, ReadIOException, RegularException
+    }
     public class AsyncCommand
     {
         public Command Command { get; private set; }

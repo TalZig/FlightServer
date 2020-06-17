@@ -9,67 +9,62 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FlightServer.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/command")]
     [ApiController]
     public class CommandController : ControllerBase
     {
         private FlightGearClient flightGear;
-        private static Command commandManager = new Command();
-
-        public const string ThrottleLocation = "/controls/engines/current-engine/throttle";
-        public const string ElevatorLocation = "/controls/flight/elevator";
-        public const string AileronLocation = "/controls/flight/aileron";
-        public const string RudderLocation = "/controls/flight/rudder";
-
         public CommandController(FlightGearClient flightGear1)
         {
             flightGear = flightGear1;
         }
-        // GET: api/Command
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-
 
         // POST: api/Command
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody]Command value)
+        public async Task<ActionResult<string>> Post([FromBody]Command value)
         {
-            var myResult = await flightGear.Execute(value);
+            Result myResult = await flightGear.Execute(value);
             if (myResult == Result.Ok)
             {
-                return Ok();
+                return Ok(FlightGearClient.EverythingIsGood);
             }
-            return NotFound();
-            /*string resultOfSendingToServer;
-            resultOfSendingToServer = flightGear.UpdateTcpSetValues(AileronLocation, value.Aileron);
-            if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
+            return NotFound(AppropriateError(myResult));
+        }
+
+        private string AppropriateError(Result result)
+        {
+            string exceptionMsg;
+            switch (result)
             {
-                return NotFound(resultOfSendingToServer);
+                case Result.WriteObjectDisposedException:
+                    exceptionMsg = FlightGearClient.WriteObjectDisposedException;
+                    break;
+                case Result.WriteInvalidOperationException:
+                    exceptionMsg = FlightGearClient.WriteInvalidOperationException;
+                    break;
+                case Result.WriteIOException:
+                    exceptionMsg = FlightGearClient.WriteIOException;
+                    break;
+                case Result.ReadObjectDisposedException:
+                    exceptionMsg = FlightGearClient.ReadObjectDisposedException;
+                    break;
+                case Result.ReadInvalidOperationException:
+                    exceptionMsg = FlightGearClient.ReadInvalidOperationException;
+                    break;
+                case Result.ReadTimeoutException:
+                    exceptionMsg = FlightGearClient.ReadTimeoutException;
+                    break;
+                case Result.ReadIOException:
+                    exceptionMsg = FlightGearClient.ReadIOException;
+                    break;
+                case Result.RegularException:
+                    exceptionMsg = FlightGearClient.RegularException;
+                    break;
+                default:
+                    exceptionMsg = "";
+                    break;
             }
-            commandManager.Aileron = value.Aileron;
-            resultOfSendingToServer = flightGear.UpdateTcpSetValues(ThrottleLocation, value.Throttle);
-            if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
-            {
-                return NotFound(resultOfSendingToServer);
-            }
-            commandManager.Throttle = value.Throttle;
-            resultOfSendingToServer = flightGear.UpdateTcpSetValues(ElevatorLocation, value.Elevator);
-            if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
-            {
-                return NotFound(resultOfSendingToServer);
-            }
-            commandManager.Elevator = value.Elevator;
-            resultOfSendingToServer = flightGear.UpdateTcpSetValues(RudderLocation, value.Rudder);
-            if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
-            {
-                return NotFound(resultOfSendingToServer);
-            }
-            commandManager.Rudder = value.Rudder;
-            return Ok();*/
+            return exceptionMsg;
         }
     }
 }

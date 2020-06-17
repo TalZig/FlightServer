@@ -151,7 +151,7 @@ namespace FlightServer.Models
 
         public void ProcessCommands()
         {
-            while (!client.IsConnect())
+            while (client.IsConnect())
             {
                 foreach (AsyncCommand command in _queue.GetConsumingEnumerable())
                 {
@@ -162,13 +162,13 @@ namespace FlightServer.Models
 
         private void OneIterationOfProcessCommands(AsyncCommand command)
         {
-            string aileronAction = OneActionOfWriteAndRead(AileronLocation, 
+            Result aileronAction = OneActionOfWriteAndRead(AileronLocation, 
                 command.Command.Aileron);
-            string elevatorAction = OneActionOfWriteAndRead(ElevatorLocation, 
+            Result elevatorAction = OneActionOfWriteAndRead(ElevatorLocation, 
                 command.Command.Elevator);
-            string rudderAction = OneActionOfWriteAndRead(RudderLocation, 
+            Result rudderAction = OneActionOfWriteAndRead(RudderLocation, 
                 command.Command.Rudder);
-            string throttleAction = OneActionOfWriteAndRead(ThrottleLocation, 
+            Result throttleAction = OneActionOfWriteAndRead(ThrottleLocation, 
                 command.Command.Throttle);
             Result res;
             if (CheckReturnOfAction(aileronAction, elevatorAction, 
@@ -178,22 +178,66 @@ namespace FlightServer.Models
             }
             else
             {
-                res = Result.NotOk;
+                res = ReturnTheException(aileronAction, elevatorAction,
+                rudderAction, throttleAction);
             }
             command.Completion.SetResult(res);
         }
 
-        private bool CheckReturnOfAction(string aileronAction, string elevatorAction, 
-            string rudderAction, string throttleAction)
+        private bool CheckReturnOfAction(Result aileronAction, Result elevatorAction,
+            Result rudderAction, Result throttleAction)
         {
-            if (aileronAction != EverythingIsGood) { return false; }
-            if (elevatorAction != EverythingIsGood) { return false; }
-            if (rudderAction != EverythingIsGood) { return false; }
-            if (throttleAction != EverythingIsGood) { return false; }
+            if (aileronAction != Result.Ok) { return false; }
+            if (elevatorAction != Result.Ok) { return false; }
+            if (rudderAction != Result.Ok) { return false; }
+            if (throttleAction != Result.Ok) { return false; }
             return true;
         }
 
-        private string OneActionOfWriteAndRead(string locationOfVariable, 
+        private Result ReturnTheException(Result aileronAction, Result elevatorAction,
+            Result rudderAction, Result throttleAction)
+        {
+            if (aileronAction != Result.Ok) { return aileronAction; }
+            if (elevatorAction != Result.Ok) { return elevatorAction; }
+            if (rudderAction != Result.Ok) { return rudderAction; }
+            return throttleAction;
+        }
+
+        private Result SetResultAccordingToException(string exceptionToChange)
+        {
+            if (exceptionToChange == WriteObjectDisposedException)
+            {
+                return Result.WriteObjectDisposedException;
+            }
+            if (exceptionToChange == WriteInvalidOperationException)
+            {
+                return Result.WriteInvalidOperationException;
+            }
+            if (exceptionToChange == ReadObjectDisposedException)
+            {
+                return Result.ReadObjectDisposedException;
+            }
+            if (exceptionToChange == ReadInvalidOperationException)
+            {
+                return Result.ReadInvalidOperationException;
+            }
+            if (exceptionToChange == ReadTimeoutException)
+            {
+                return Result.ReadTimeoutException;
+            }
+            if (exceptionToChange == ReadIOException)
+            {
+                return Result.ReadIOException;
+            }
+            if (exceptionToChange == RegularException)
+            {
+                return Result.RegularException;
+            }
+            return Result.Ok;
+
+        }
+
+        private Result OneActionOfWriteAndRead(string locationOfVariable, 
             double valueOfVariable)
         {
             string messageToServerWithSet = RequestFromServer(true, locationOfVariable, 
@@ -201,7 +245,7 @@ namespace FlightServer.Models
             string statusOfWriteToServer = WriteToServer(messageToServerWithSet);
             if (statusOfWriteToServer != EverythingIsGood) 
             { 
-                return statusOfWriteToServer; 
+                return SetResultAccordingToException(statusOfWriteToServer); 
             }
             string messageToServerInGet = RequestFromServer(false, locationOfVariable, 
                 valueOfVariable);
@@ -209,11 +253,11 @@ namespace FlightServer.Models
             string statusOfReadFromServer = ReadFromServer();
             if (!IsValidInput(statusOfReadFromServer, valueOfVariable)) 
             { 
-                return statusOfReadFromServer; 
+                return SetResultAccordingToException(statusOfReadFromServer); 
             }
-            return EverythingIsGood;
+            return Result.Ok;
         }
-        public bool IsValidInput(string strRead, double valueFromJSON)
+        private bool IsValidInput(string strRead, double valueFromJSON)
         {
             if (!readSucceed) { return false; }
             if (valueFromJSON != Double.Parse(strRead))
@@ -223,7 +267,7 @@ namespace FlightServer.Models
             return true;
         }
 
-        public string RequestFromServer(bool isSet, string locationInServer, double val)
+        private string RequestFromServer(bool isSet, string locationInServer, double val)
         {
             string messageToServer;
             if (isSet)
