@@ -19,6 +19,10 @@ namespace FlightServer
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            /*string Ip = configuration.GetSection("Host").GetSection("Ip").Value;
+            string Port = configuration.GetSection("Host").GetSection("Port").Value;
+            string HttpAddress = configuration.GetSection("Host").GetSection("HttpAddress").Value;
+            Models.Host data = new Models.Host(Ip, Port, HttpAddress);*/
         }
 
         public IConfiguration Configuration { get; }
@@ -26,6 +30,8 @@ namespace FlightServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<DataOfServer>(Configuration.GetSection("DataOfServer"));
+            services.AddOptions();
             services.AddControllers();
             services.AddSingleton<ITCPClient, ClientTcp>();
             services.AddSingleton<FlightGearClient, FlightGearClient>();

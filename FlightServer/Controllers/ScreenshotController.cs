@@ -10,18 +10,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FlightServer.Controllers
 {
-    [Route("[controller]")]
+    [Route("screenshot")]
     [ApiController]
     public class ScreenshotController : ControllerBase
     {
         private static Screenshot screenshot;
-        public ScreenshotController(Screenshot ss)
+        public ScreenshotController(Screenshot screenshotNew)
         {
-            screenshot = ss;
+            screenshot = screenshotNew;
         }
         // GET: Screenshot
         [HttpGet]
-        public async Task<Stream> Get()
+        public async Task<FileContentResult> Get()
         {
             string statusOfConnection = screenshot.ConnectToTcp();
             if (statusOfConnection != "Ok")
@@ -31,8 +31,8 @@ namespace FlightServer.Controllers
             // Connection succeed.
             try
             {
-                var image = await screenshot.GetScreenshot();
-                return image;
+                byte[] image = await screenshot.GetScreenshot();
+                return File(image, "image/jpg");
             }
             catch (Exception)
             {
