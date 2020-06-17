@@ -31,12 +31,10 @@ namespace FlightServer.Models
                 Write("data\n");
                 connect = true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 connect = false;
-                Console.WriteLine(e);
                 return "There is a problem with connecting to the server";
-                /*throw new Exception("There is aproblem with connecting to the server");*/
             }
             return "Ok";
         }

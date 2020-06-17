@@ -19,10 +19,6 @@ namespace FlightServer
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            /*string Ip = configuration.GetSection("Host").GetSection("Ip").Value;
-            string Port = configuration.GetSection("Host").GetSection("Port").Value;
-            string HttpAddress = configuration.GetSection("Host").GetSection("HttpAddress").Value;
-            Models.Host data = new Models.Host(Ip, Port, HttpAddress);*/
         }
 
         public IConfiguration Configuration { get; }
@@ -34,8 +30,7 @@ namespace FlightServer
             services.AddOptions();
             services.AddControllers();
             services.AddSingleton<ITCPClient, ClientTcp>();
-            services.AddSingleton<FlightGearClient, FlightGearClient>();
-            services.AddSingleton<Screenshot, Screenshot>();
+            services.AddSingleton<MySimulatorModel, MySimulatorModel>();
 
         }
 

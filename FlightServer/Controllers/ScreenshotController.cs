@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using FlightServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.Extensions.Options;
 
 namespace FlightServer.Controllers
 {
@@ -14,31 +15,42 @@ namespace FlightServer.Controllers
     [ApiController]
     public class ScreenshotController : ControllerBase
     {
-        private static Screenshot screenshot;
-        public ScreenshotController(Screenshot screenshotNew)
+        private static ITCPClient tcpClient;
+        private static DataOfServer dataOfServer;
+        public ScreenshotController(ITCPClient client, IOptions<DataOfServer> options)
         {
-            screenshot = screenshotNew;
+            dataOfServer = options.Value;
+            tcpClient = client;
+            tcpClient.Connect(dataOfServer.Ip, dataOfServer.Port);
         }
         // GET: Screenshot
         [HttpGet]
-        public async Task<FileContentResult> Get()
+        public async Task<IActionResult> Get()
         {
-            string statusOfConnection = screenshot.ConnectToTcp();
-            if (statusOfConnection != "Ok")
+            byte[] image;
+            // Open connection with the givven externalUrlServer.
+            using (HttpClient httpClient = new HttpClient())
             {
-                return default;
+                TimeSpan timeout = new TimeSpan(0, 0, 50);
+                httpClient.Timeout = timeout;
+                try
+                {
+                    string requestScreenshot = dataOfServer.HttpAddress + "/screenshot";
+                    // Get the Json as string.
+                    HttpResponseMessage resultTest = await httpClient.GetAsync(requestScreenshot);
+                    image = await resultTest.Content.ReadAsByteArrayAsync();
+                }
+                // This http is not connect.
+                catch (Exception)
+                {
+                    image = null;
+                }
             }
-            // Connection succeed.
-            try
+            if (image == null)
             {
-                byte[] image = await screenshot.GetScreenshot();
-                return File(image, "image/jpg");
+                return NotFound(image);
             }
-            catch (Exception)
-            {
-            }
-
-            return default;
+            return File(image, "image/jpg");
         }
     }
 }

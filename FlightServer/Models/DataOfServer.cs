@@ -10,11 +10,5 @@ namespace FlightServer.Models
        public string Ip { get; set; }
        public int Port { get; set; }
         public string HttpAddress { get; set; }
-        /*public Host(string IpNew, string PortNew, string HttpAddressNew)
-        {
-            Ip = IpNew;
-            Port = PortNew;
-            HttpAddress = HttpAddressNew;
-        }*/
     }
 }

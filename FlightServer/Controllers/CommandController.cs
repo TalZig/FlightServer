@@ -13,8 +13,8 @@ namespace FlightServer.Controllers
     [ApiController]
     public class CommandController : ControllerBase
     {
-        private FlightGearClient flightGear;
-        public CommandController(FlightGearClient flightGear1)
+        private MySimulatorModel flightGear;
+        public CommandController(MySimulatorModel flightGear1)
         {
             flightGear = flightGear1;
         }
@@ -23,10 +23,11 @@ namespace FlightServer.Controllers
         [HttpPost]
         public async Task<ActionResult<string>> Post([FromBody]Command value)
         {
+            
             Result myResult = await flightGear.Execute(value);
             if (myResult == Result.Ok)
             {
-                return Ok(FlightGearClient.EverythingIsGood);
+                return Ok(MySimulatorModel.EverythingIsGood);
             }
             return NotFound(AppropriateError(myResult));
         }
@@ -37,28 +38,28 @@ namespace FlightServer.Controllers
             switch (result)
             {
                 case Result.WriteObjectDisposedException:
-                    exceptionMsg = FlightGearClient.WriteObjectDisposedException;
+                    exceptionMsg = MySimulatorModel.WriteObjectDisposedException;
                     break;
                 case Result.WriteInvalidOperationException:
-                    exceptionMsg = FlightGearClient.WriteInvalidOperationException;
+                    exceptionMsg = MySimulatorModel.WriteInvalidOperationException;
                     break;
                 case Result.WriteIOException:
-                    exceptionMsg = FlightGearClient.WriteIOException;
+                    exceptionMsg = MySimulatorModel.WriteIOException;
                     break;
                 case Result.ReadObjectDisposedException:
-                    exceptionMsg = FlightGearClient.ReadObjectDisposedException;
+                    exceptionMsg = MySimulatorModel.ReadObjectDisposedException;
                     break;
                 case Result.ReadInvalidOperationException:
-                    exceptionMsg = FlightGearClient.ReadInvalidOperationException;
+                    exceptionMsg = MySimulatorModel.ReadInvalidOperationException;
                     break;
                 case Result.ReadTimeoutException:
-                    exceptionMsg = FlightGearClient.ReadTimeoutException;
+                    exceptionMsg = MySimulatorModel.ReadTimeoutException;
                     break;
                 case Result.ReadIOException:
-                    exceptionMsg = FlightGearClient.ReadIOException;
+                    exceptionMsg = MySimulatorModel.ReadIOException;
                     break;
                 case Result.RegularException:
-                    exceptionMsg = FlightGearClient.RegularException;
+                    exceptionMsg = MySimulatorModel.RegularException;
                     break;
                 default:
                     exceptionMsg = "";

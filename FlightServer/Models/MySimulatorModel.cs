@@ -1,18 +1,20 @@
 ﻿using FlightMobileAppServer.Models;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
 
 namespace FlightServer.Models
 {
-    public class FlightGearClient
+    public class MySimulatorModel
     {
         ITCPClient client;
-        private readonly BlockingCollection<AsyncCommand> _queue;
+        private readonly BlockingCollection<AsyncCommand> _queueCommand;
         private bool readSucceed;
 
         public const string WriteObjectDisposedException = "The server has been " +
@@ -41,9 +43,9 @@ namespace FlightServer.Models
 
         // ShouldStop for ShouldStop the thread in the staet method
 
-        public FlightGearClient(ITCPClient tcpClient)
+        public MySimulatorModel(ITCPClient tcpClient)
         {
-            _queue = new BlockingCollection<AsyncCommand>();
+            _queueCommand = new BlockingCollection<AsyncCommand>();
             this.client = tcpClient;
             Start();
         }
@@ -53,16 +55,8 @@ namespace FlightServer.Models
         public Task<Result> Execute(Command cmd)
         {
             var asyncCommand = new AsyncCommand(cmd);
-            _queue.Add(asyncCommand);
+            _queueCommand.Add(asyncCommand);
             return asyncCommand.Task;
-        }
-
-        //create connection with the server(simulator)
-        // catch the exp if the server ip or port does not exsit 
-        public void Connect(string ip, int port)
-        {
-            this.client.Connect(ip, port);
-            Start();
         }
 
         // ShouldStop the thread and log out
@@ -87,18 +81,22 @@ namespace FlightServer.Models
             }
             catch (ObjectDisposedException)
             {
+                readSucceed = false;
                 return ReadObjectDisposedException;
             }
             catch (InvalidOperationException)
             {
+                readSucceed = false;
                 return ReadInvalidOperationException;
             }
             catch (TimeoutException)
             {
+                readSucceed = false;
                 return ReadTimeoutException;
             }
             catch (IOException e)
             {
+                readSucceed = false;
                 string msg;
                 // Sometimes there is timeout but this exception belongs to IOException.
                 if (e.Message.Contains("Unable to read data from the transport " +
@@ -118,6 +116,7 @@ namespace FlightServer.Models
             }
             catch (Exception)
             {
+                readSucceed = false;
                 return RegularException;
             }
         }
@@ -153,7 +152,7 @@ namespace FlightServer.Models
         {
             while (client.IsConnect())
             {
-                foreach (AsyncCommand command in _queue.GetConsumingEnumerable())
+                foreach (AsyncCommand command in _queueCommand.GetConsumingEnumerable())
                 {
                     OneIterationOfProcessCommands(command);
                 }
@@ -164,43 +163,26 @@ namespace FlightServer.Models
         {
             Result aileronAction = OneActionOfWriteAndRead(AileronLocation, 
                 command.Command.Aileron);
+            if (!CheckReturnOfAction(aileronAction, command)) { return; }
             Result elevatorAction = OneActionOfWriteAndRead(ElevatorLocation, 
                 command.Command.Elevator);
+            if (!CheckReturnOfAction(elevatorAction, command)) { return; }
             Result rudderAction = OneActionOfWriteAndRead(RudderLocation, 
                 command.Command.Rudder);
+            if (!CheckReturnOfAction(rudderAction, command)) { return; }
             Result throttleAction = OneActionOfWriteAndRead(ThrottleLocation, 
                 command.Command.Throttle);
-            Result res;
-            if (CheckReturnOfAction(aileronAction, elevatorAction, 
-                rudderAction, throttleAction))
-            {
-                res = Result.Ok;
-            }
-            else
-            {
-                res = ReturnTheException(aileronAction, elevatorAction,
-                rudderAction, throttleAction);
-            }
-            command.Completion.SetResult(res);
+            if (!CheckReturnOfAction(throttleAction, command)) { return; }
+            command.Completion.SetResult(Result.Ok);
         }
-
-        private bool CheckReturnOfAction(Result aileronAction, Result elevatorAction,
-            Result rudderAction, Result throttleAction)
+        private bool CheckReturnOfAction(Result oneAction, AsyncCommand command)
         {
-            if (aileronAction != Result.Ok) { return false; }
-            if (elevatorAction != Result.Ok) { return false; }
-            if (rudderAction != Result.Ok) { return false; }
-            if (throttleAction != Result.Ok) { return false; }
+            if (oneAction != Result.Ok) 
+            {
+                command.Completion.SetResult(oneAction);
+                return false; 
+            }
             return true;
-        }
-
-        private Result ReturnTheException(Result aileronAction, Result elevatorAction,
-            Result rudderAction, Result throttleAction)
-        {
-            if (aileronAction != Result.Ok) { return aileronAction; }
-            if (elevatorAction != Result.Ok) { return elevatorAction; }
-            if (rudderAction != Result.Ok) { return rudderAction; }
-            return throttleAction;
         }
 
         private Result SetResultAccordingToException(string exceptionToChange)
@@ -260,7 +242,16 @@ namespace FlightServer.Models
         private bool IsValidInput(string strRead, double valueFromJSON)
         {
             if (!readSucceed) { return false; }
-            if (valueFromJSON != Double.Parse(strRead))
+            double numberOfRead;
+            try
+            {
+                numberOfRead = Double.Parse(strRead);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            if (valueFromJSON != numberOfRead)
             {
                 return false;
             }
