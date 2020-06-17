@@ -36,9 +36,15 @@ namespace FlightServer.Controllers
 
         // POST: api/Command
         [HttpPost]
-        public ActionResult<string> Post([FromBody]Command value)
+        public async Task<ActionResult> Post([FromBody]Command value)
         {
-            string resultOfSendingToServer;
+            var myResult = await flightGear.Execute(value);
+            if (myResult == Result.Ok)
+            {
+                return Ok();
+            }
+            return NotFound();
+            /*string resultOfSendingToServer;
             resultOfSendingToServer = flightGear.UpdateTcpSetValues(AileronLocation, value.Aileron);
             if (resultOfSendingToServer != FlightGearClient.EverythingIsGood)
             {
@@ -63,17 +69,7 @@ namespace FlightServer.Controllers
                 return NotFound(resultOfSendingToServer);
             }
             commandManager.Rudder = value.Rudder;
-            return Ok();
-            /*commandManager.SetValuesFromPost(value);
-            // Call the methood that will update the values and update the flightGear.
-            flightGear.setValues(value);
-            if (!flightGear.checkSuccessInPost(value))
-            {
-                //return "Dont success".
-            }
-
-            flightGear.UpdateTcpSetValues(value);*/
-
+            return Ok();*/
         }
     }
 }
